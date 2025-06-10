@@ -1,0 +1,11 @@
+{
+	"profile.label": "网站通知",
+	"profile.introduction": "除了论坛内通知和电子邮件通知外，您还可以选择接收网站通知。这样，即使论坛未在设备上打开，您也能收到通知。",
+	"profile.option": "在此设备上启用网站通知",
+	"profile.devices": "目前正在通知 <strong>%1</strong> 个设备。",
+	"profile.permissionBlocked": "您的设备目前不允许接收来自本网站的通知。请授予通知权限以继续。",
+	"profile.send-test": "发送测试通知",
+
+	"toast.test_success": "测试通知已发送。",
+	"toast.test_unavailable": "由于此设备未启用推送通知，因此无法发送测试通知。"
+}
