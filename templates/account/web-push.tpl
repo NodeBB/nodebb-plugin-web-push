@@ -6,7 +6,7 @@
 
 <div class="alert alert-warning d-none" id="permission-warning">[[web-push:profile.permissionBlocked]]</div>
 
-<form role="form">
+<form role="form" component="web-push-form">
 	<div class="form-check form-switch mb-3">
 		<input type="checkbox" class="form-check-input" id="enabled" name="enabled" autocomplete="off" data-action="toggle">
 		<label for="enabled" class="form-check-label">[[web-push:profile.option]]</label>

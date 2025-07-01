@@ -5,7 +5,11 @@ import { post, del } from 'api';
 import { success, warning } from 'alerts';
 
 export async function init() {
-	const containerEl = document.querySelector('.account');
+	const containerEl = document.querySelector('[component="web-push-form"]');
+	if (!containerEl) {
+		console.error('Web Push form container not found');
+		return;
+	}
 	const registration = await navigator.serviceWorker.ready;
 	let subscription = await registration.pushManager.getSubscription();
 	const convertedVapidKey = urlBase64ToUint8Array(config['web-push'].vapidKey);
