@@ -218,6 +218,7 @@ async function constructPayload(notification, uid, lang) {
 
 	let [title, body] = await translator.translateKeys([bodyShort, bodyLong], lang);
 	([title, body] = [title, body].map(str => validator.unescape(utils.stripHTMLTags(str))));
+	title = `${dir === 'rtl' ? '\u200f' : '\u200e'}${title}`;
 	const tag = mergeId || nid;
 	const url = `${nconf.get('url')}${path}`;
 
