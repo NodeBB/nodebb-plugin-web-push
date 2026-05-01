@@ -7,5 +7,7 @@
 	"profile.send-test": "发送测试通知",
 
 	"toast.test_success": "测试通知已发送。",
-	"toast.test_unavailable": "由于此设备未启用推送通知，因此无法发送测试通知。"
+	"toast.test_unavailable": "由于此设备未启用推送通知，因此无法发送测试通知。",
+	"toast.permission_denied": "通知权限已被拒绝。请在浏览器设置中允许此站点发送通知。",
+	"toast.subscribe_failed": "无法在此设备上启用推送通知。请重试。"
 }

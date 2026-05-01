@@ -33,7 +33,30 @@ export async function init() {
 				case 'toggle': {
 					const countEl = document.querySelector('#deviceCount strong');
 					if (!subscription) {
+						// iOS Safari is strict about user activation: subscribe() must be
+						// called from the same synchronous task as the click. We branch BEFORE
+						// any await: if permission is already granted, call subscribe() first
+						// (no awaits in between). Otherwise request permission, which itself
+						// preserves activation on Chrome but may lose it on iOS — the user can
+						// just tap again.
+						if (Notification.permission === 'denied') {
+							subselector.checked = false;
+							warning('[[web-push:toast.permission_denied]]');
+							document.getElementById('permission-warning').classList.remove('d-none');
+							break;
+						}
+
 						try {
+							if (Notification.permission !== 'granted') {
+								const permission = await Notification.requestPermission();
+								if (permission !== 'granted') {
+									subselector.checked = false;
+									warning('[[web-push:toast.permission_denied]]');
+									document.getElementById('permission-warning').classList.remove('d-none');
+									break;
+								}
+							}
+
 							subscription = await registration.pushManager.subscribe({
 								userVisibleOnly: true,
 								applicationServerKey: convertedVapidKey,
@@ -45,8 +68,16 @@ export async function init() {
 							let count = parseInt(countEl.textContent, 10);
 							count += 1;
 							countEl.innerText = count;
-						} catch (e) {
+						} catch (err) {
+							console.error('[web-push] subscribe failed:', err);
 							subselector.checked = false;
+							// Roll back any browser-level subscription created before the failure.
+							const stale = await registration.pushManager.getSubscription();
+							if (stale) {
+								await stale.unsubscribe();
+							}
+							subscription = null;
+							warning('[[web-push:toast.subscribe_failed]]');
 						}
 					} else {
 						await subscription.unsubscribe();
