@@ -10,7 +10,31 @@ export async function init() {
 		console.error('Web Push form container not found');
 		return;
 	}
-	const registration = await navigator.serviceWorker.ready;
+
+	if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+		console.error('[web-push] Service workers or Push API not supported in this browser');
+		warning('[[web-push:toast.unsupported]]');
+		return;
+	}
+
+	// navigator.serviceWorker.ready never rejects — it hangs forever if no SW is registered.
+	// On iOS this is a common failure mode (PWA not installed, scope mismatch, core SW failed
+	// to register). Race it against a timeout so we surface the problem instead of hanging.
+	const registration = await Promise.race([
+		navigator.serviceWorker.ready,
+		new Promise((_, reject) => setTimeout(
+			() => reject(new Error('Service worker not ready after 5s — likely not registered')),
+			5000
+		)),
+	]).catch((err) => {
+		console.error('[web-push]', err);
+		warning('[[web-push:toast.sw_not_registered]]');
+		return null;
+	});
+	if (!registration) {
+		return;
+	}
+
 	let subscription = await registration.pushManager.getSubscription();
 	const convertedVapidKey = urlBase64ToUint8Array(config['web-push'].vapidKey);
 

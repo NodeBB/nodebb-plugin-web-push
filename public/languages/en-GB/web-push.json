@@ -9,5 +9,7 @@
 	"toast.test_success": "Test notification sent.",
 	"toast.test_unavailable": "Cannot send test notification as push notifications are not enabled on this device.",
 	"toast.permission_denied": "Notification permission was denied. Please enable notifications for this site in your browser settings.",
-	"toast.subscribe_failed": "Could not enable push notifications on this device. Please try again."
+	"toast.subscribe_failed": "Could not enable push notifications on this device. Please try again.",
+	"toast.unsupported": "This browser does not support push notifications.",
+	"toast.sw_not_registered": "Push notifications are unavailable: the background service is not registered. On iOS, install this site to your Home Screen first."
 }

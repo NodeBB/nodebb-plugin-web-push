@@ -9,5 +9,7 @@
 	"toast.test_success": "测试通知已发送。",
 	"toast.test_unavailable": "由于此设备未启用推送通知，因此无法发送测试通知。",
 	"toast.permission_denied": "通知权限已被拒绝。请在浏览器设置中允许此站点发送通知。",
-	"toast.subscribe_failed": "无法在此设备上启用推送通知。请重试。"
+	"toast.subscribe_failed": "无法在此设备上启用推送通知。请重试。",
+	"toast.unsupported": "此浏览器不支持推送通知。",
+	"toast.sw_not_registered": "推送通知不可用：后台服务未注册。在 iOS 上，请先将本站添加到主屏幕。"
 }
