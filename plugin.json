@@ -13,6 +13,9 @@
 		{ "hook": "filter:service-worker.scripts", "method": "registerServiceWorker" }
 	],
 	"languages": "public/languages",
+	"scripts": [
+		"public/lib/main.js"
+	],
 	"modules": {
 		"../client/account/web-push.js": "./public/lib/settings.js",
 		"../admin/plugins/web-push.js": "./public/lib/admin.js"
