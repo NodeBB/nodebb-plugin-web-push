@@ -11,5 +11,8 @@
 	"toast.permission_denied": "Notification permission was denied. Please enable notifications for this site in your browser settings.",
 	"toast.subscribe_failed": "Could not enable push notifications on this device. Please try again.",
 	"toast.unsupported": "This browser does not support push notifications.",
-	"toast.sw_not_registered": "Push notifications are unavailable: the background service is not registered. On iOS, install this site to your Home Screen first."
+	"toast.sw_not_registered": "Push notifications are unavailable: the background service is not registered. On iOS, install this site to your Home Screen first.",
+
+	"action.mark-read": "Mark as read",
+	"action.view-notifications": "View notifications"
 }

@@ -255,12 +255,27 @@ async function constructPayload(notification, uid, lang) {
 		badge = `${nconf.get('url')}${meta.config['brand:maskableIcon'] || '/apple-touch-icon'}`;
 	}
 
+	const actions = await constructActions(lang);
+
 	return {
 		title,
 		body,
 		tag,
 		lang,
 		dir,
-		data: { url, icon, badge },
+		actions,
+		data: { url, icon, badge, nid },
 	};
+}
+
+async function constructActions(lang) {
+	const [markRead, viewNotifications] = await translator.translateKeys([
+		'[[web-push:action.mark-read]]',
+		'[[web-push:action.view-notifications]]',
+	], lang);
+
+	return [
+		{ action: 'mark-read', title: markRead },
+		{ action: 'view-notifications', title: viewNotifications },
+	];
 }
