@@ -1,24 +1,25 @@
 'use strict';
 
 const crypto = require('crypto');
-const nconf = require.main.require('nconf');
-const winston = require.main.require('winston');
 const webPush = require('web-push');
 const validator = require('validator');
 
-const db = require.main.require('./src/database');
-const user = require.main.require('./src/user');
-const meta = require.main.require('./src/meta');
-const utils = require.main.require('./src/utils');
-const translator = require.main.require('./src/translator');
-const notifications = require.main.require('./src/notifications');
+const nconf = nodebb.require('nconf');
+const winston = nodebb.require('winston');
+
+const db = nodebb.require('./src/database');
+const user = nodebb.require('./src/user');
+const meta = nodebb.require('./src/meta');
+const utils = nodebb.require('./src/utils');
+const translator = nodebb.require('./src/translator');
+const notifications = nodebb.require('./src/notifications');
+
+const routeHelpers = nodebb.require('./src/routes/helpers');
 
 const controllers = require('./lib/controllers');
 const subscriptions = require('./lib/subscriptions');
 
-const routeHelpers = require.main.require('./src/routes/helpers');
-
-const plugin = {};
+const plugin = module.exports;
 
 plugin.init = async (params) => {
 	const { router, middleware/* , controllers */ } = params;
@@ -263,5 +264,3 @@ async function constructPayload(notification, uid, lang) {
 		data: { url, icon, badge },
 	};
 }
-
-module.exports = plugin;
