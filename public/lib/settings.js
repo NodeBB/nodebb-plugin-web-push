@@ -12,7 +12,6 @@ export async function init() {
 	}
 
 	if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-		console.error('[web-push] Service workers or Push API not supported in this browser');
 		warning('[[web-push:toast.unsupported]]');
 		return;
 	}
@@ -26,8 +25,7 @@ export async function init() {
 			() => reject(new Error('Service worker not ready after 5s — likely not registered')),
 			5000
 		)),
-	]).catch((err) => {
-		console.error('[web-push]', err);
+	]).catch(() => {
 		warning('[[web-push:toast.sw_not_registered]]');
 		return null;
 	});
@@ -93,7 +91,6 @@ export async function init() {
 							count += 1;
 							countEl.innerText = count;
 						} catch (err) {
-							console.error('[web-push] subscribe failed:', err);
 							subselector.checked = false;
 							// Roll back any browser-level subscription created before the failure.
 							const stale = await registration.pushManager.getSubscription();
