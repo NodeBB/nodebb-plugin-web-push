@@ -7,27 +7,13 @@ self.addEventListener('push', (event) => {
 	const { title, body, tag, data } = event.data.json();
 
 	if (title && body) {
-		const { icon, mergeId } = data;
+		const { icon } = data;
 		delete data.icon;
 		const { badge } = data;
 		delete data.badge;
 
-		// Close any existing notifications with the same mergeId (for Safari compatibility)
-		// Safari doesn't properly support the 'tag' property for replacing notifications
-		const closePromise = mergeId
-			? self.registration.getNotifications().then((notifications) => {
-				notifications.forEach((notification) => {
-					if (notification.data && notification.data.mergeId === mergeId) {
-						notification.close();
-					}
-				});
-			})
-			: Promise.resolve();
-
 		event.waitUntil(
-			closePromise.then(() => {
-				return self.registration.showNotification(title, { body, tag, data, icon, badge });
-			})
+			self.registration.showNotification(title, { body, tag, data, icon, badge })
 		);
 	} else if (tag) {
 		event.waitUntil(

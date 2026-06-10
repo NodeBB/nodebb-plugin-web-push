@@ -244,7 +244,7 @@ async function constructPayload(notification, uid, lang) {
 		tag,
 		lang,
 		dir,
-		data: { url, icon, badge, mergeId },
+		data: { url, icon, badge },
 	};
 }
 
