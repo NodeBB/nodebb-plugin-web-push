@@ -1,6 +1,5 @@
 'use strict';
 
-const crypto = require('crypto');
 const webPush = require('web-push');
 const validator = require('validator');
 
@@ -146,7 +145,7 @@ plugin.onNotificationPush = async ({ notification, uidsNotified: uids }) => {
 		const targets = subs.get(uid);
 		targets.forEach(async (subscription) => {
 			try {
-				await webPush.sendNotification(subscription, JSON.stringify(payload), pushOptions(payload.tag));
+				await webPush.sendNotification(subscription, JSON.stringify(payload));
 			} catch (e) {
 				// Errored — remove subscription from user
 				winston.info(`[plugins/web-push] Push failed: ${e.code}; ${e.message}; statusCode: ${e.statusCode}`);
@@ -172,7 +171,7 @@ plugin.onNotificationRescind = async ({ nids }) => {
 		if (subs.size) {
 			await Promise.all(Array.from(subs).map(async (subscription) => {
 				try {
-					await webPush.sendNotification(subscription, JSON.stringify({ tag }), pushOptions(tag));
+					await webPush.sendNotification(subscription, JSON.stringify({ tag }));
 				} catch (e) {
 					winston.info(`[plugins/web-push] Push failed: ${e.code}; ${e.message}; statusCode: ${e.statusCode}`);
 				}
@@ -199,21 +198,6 @@ plugin.addProfileItem = (data) => {
 
 	return data;
 };
-
-// The Web Push protocol "Topic" header makes a new push replace a previous one
-// with the same topic. Apple's push service maps it to apns-collapse-id, so on
-// Safari/iOS — which ignore the notification 'tag' — a new notification still
-// replaces the one already displayed. Topics are limited to 32 base64url
-// characters, so hash the tag down to size.
-function pushOptions(tag) {
-	if (!tag) {
-		return {};
-	}
-
-	return {
-		topic: crypto.createHash('sha256').update(String(tag)).digest('base64url').slice(0, 32),
-	};
-}
 
 async function constructPayload(notification, uid, lang) {
 	let { maxLength, icon, badge } = await meta.settings.get('web-push');
