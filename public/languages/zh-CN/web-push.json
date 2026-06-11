@@ -7,6 +7,7 @@
 	"profile.send-test": "发送测试通知",
 
 	"toast.test_success": "测试通知已发送。",
+	"toast.subscribe_success": "已在此设备上启用推送通知。",
 	"toast.test_unavailable": "由于此设备未启用推送通知，因此无法发送测试通知。",
 	"toast.permission_denied": "通知权限已被拒绝。请在浏览器设置中允许此站点发送通知。",
 	"toast.subscribe_failed": "无法在此设备上启用推送通知。请重试。",
@@ -14,5 +15,29 @@
 	"toast.sw_not_registered": "推送通知不可用：后台服务未注册。在 iOS 上，请先将本站添加到主屏幕。",
 
 	"action.mark-read": "标记为已读",
-	"action.view-notifications": "查看通知"
+	"action.view-notifications": "查看通知",
+
+	"prompt.title": "保持最新动态",
+	"prompt.body": "启用推送通知，即使不在网站时也能及时收到提醒。",
+	"prompt.confirm": "启用通知",
+	"prompt.dismiss": "不，谢谢",
+
+	"test.title": "测试通知",
+	"test.body": "这是一条来自 NodeBB 的测试消息",
+
+	"admin.menu-label": "推送通知（Push API）",
+	"admin.settings": "设置",
+	"admin.max-length": "最大长度",
+	"admin.max-length-help": "超出指定长度的字符将被截断。由于软件限制，如果消息正文超过 4096 字节，消息本身将作为附件随推送通知发送。",
+	"admin.badge": "徽章 URL",
+	"admin.badge-help": "可选 — 覆盖所发送消息的徽章（通常显示在移动设备的通知栏中）。默认发送站点配置的“touch icon”。",
+	"admin.icon": "图标 URL",
+	"admin.icon-help": "可选 — 覆盖所发送消息的图标（可用于品牌宣传等）。默认发送站点配置的“touch icon”。",
+	"admin.prompt-enabled": "向已登录用户显示订阅提示",
+	"admin.prompt-enabled-help": "启用后，在达到设定的访问次数后，会在屏幕角落显示一个邀请用户启用推送通知的小横幅。它不会阻挡页面，用户关闭或订阅后将不再显示。",
+	"admin.prompt-delay": "显示提示前的访问次数",
+	"admin.prompt-delay-help": "已登录用户需要访问多少次页面后才会显示订阅提示。最小值为 1。",
+	"admin.users": "用户",
+	"admin.user": "用户",
+	"admin.devices": "设备"
 }

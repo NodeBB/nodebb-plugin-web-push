@@ -85,6 +85,7 @@ export async function init() {
 							});
 
 							await post('/plugins/web-push/subscription', { subscription: subscription.toJSON() });
+							success('[[web-push:toast.subscribe_success]]');
 
 							// Update count
 							let count = parseInt(countEl.textContent, 10);

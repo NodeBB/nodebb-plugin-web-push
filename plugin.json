@@ -14,7 +14,8 @@
 	],
 	"languages": "public/languages",
 	"scripts": [
-		"public/lib/main.js"
+		"public/lib/main.js",
+		"public/lib/prompt.js"
 	],
 	"modules": {
 		"../client/account/web-push.js": "./public/lib/settings.js",
