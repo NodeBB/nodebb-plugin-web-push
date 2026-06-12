@@ -5,14 +5,14 @@
 // Visit count and dismissal are tracked per-device in localStorage.
 
 (async () => {
-	const [hooks, api, translator, alerts] = await app.require(['hooks', 'api', 'translator', 'alerts']);
+	const [hooks, api, alerts, storage] = await app.require(['hooks', 'api', 'alerts', 'storage']);
 
 	const visitsKey = 'web-push:visits';
 	const dismissedKey = 'web-push:prompt-dismissed';
 
 	hooks.on('action:app.load', async () => {
 		const { promptEnabled, promptDelay, vapidKey } = config['web-push'] || {};
-		if (!promptEnabled || !vapidKey || !app.user.uid || localStorage.getItem(dismissedKey)) {
+		if (!promptEnabled || !vapidKey || !app.user.uid || storage.getItem(dismissedKey)) {
 			return;
 		}
 
@@ -26,8 +26,8 @@
 			return;
 		}
 
-		const visits = (parseInt(localStorage.getItem(visitsKey), 10) || 0) + 1;
-		localStorage.setItem(visitsKey, visits);
+		const visits = (parseInt(storage.getItem(visitsKey), 10) || 0) + 1;
+		storage.setItem(visitsKey, visits);
 		if (visits < promptDelay) {
 			return;
 		}
@@ -36,23 +36,8 @@
 	});
 
 	async function showBanner(registration) {
-		// z-index keeps the banner below bootstrap modals (1055)
-		const html = await translator.translate(`
-			<div component="web-push/prompt" class="card position-fixed bottom-0 end-0 m-3 shadow" style="max-width: 20rem; z-index: 1045;">
-				<div class="card-body">
-					<h6 class="card-title fw-bold"><i class="fa fa-bell text-primary"></i> [[web-push:prompt.title]]</h6>
-					<p class="card-text small text-muted">[[web-push:prompt.body]]</p>
-					<div class="d-flex justify-content-end gap-2">
-						<button type="button" class="btn btn-sm btn-link text-muted" data-action="dismiss">[[web-push:prompt.dismiss]]</button>
-						<button type="button" class="btn btn-sm btn-primary" data-action="subscribe">[[web-push:prompt.confirm]]</button>
-					</div>
-				</div>
-			</div>
-		`);
-
-		const wrapper = document.createElement('div');
-		wrapper.innerHTML = html;
-		const banner = wrapper.firstElementChild;
+		const $banner = await app.parseAndTranslate('partials/web-push/prompt', {});
+		const banner = $banner.get(0);
 		document.body.append(banner);
 
 		banner.addEventListener('click', (e) => {
@@ -65,7 +50,7 @@
 				subscribe(registration);
 			}
 
-			localStorage.setItem(dismissedKey, '1');
+			storage.setItem(dismissedKey, '1');
 			banner.remove();
 		});
 	}

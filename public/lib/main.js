@@ -13,13 +13,9 @@
 			return;
 		}
 
-		const ua = navigator.userAgent;
-		const isSafari = /^((?!chrome|android).)*safari/i.test(ua);
-		const isIOS = /iPad|iPhone|iPod/.test(ua) ||
-			(navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-
-		if (!isSafari && !isIOS) {
-			// Core handles registration on non-Safari browsers.
+		// Mirror core's own condition (config.useragent.isSafari) so the two
+		// checks can never disagree: core skips exactly when we register.
+		if (!config.useragent || !config.useragent.isSafari) {
 			return;
 		}
 
