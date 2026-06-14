@@ -38,9 +38,12 @@ plugin.init = async (params) => {
 };
 
 plugin.appendConfig = async (config) => {
-	const { publicKey } = await meta.settings.get('web-push');
+	const { publicKey, promptEnabled, promptDelay } = await meta.settings.get('web-push');
 	config['web-push'] = {
 		vapidKey: publicKey,
+		// checkbox serialization varies by database and core version
+		promptEnabled: [true, 'true', 'on', 1, '1'].includes(promptEnabled),
+		promptDelay: Math.max(parseInt(promptDelay, 10) || 3, 1),
 	};
 
 	return config;

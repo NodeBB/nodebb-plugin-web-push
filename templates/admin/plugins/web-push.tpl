@@ -24,6 +24,18 @@
 						<input type="text" id="icon" name="icon" title="[[web-push:admin.icon]]" class="form-control" placeholder="https://...">
 						<p class="form-text">[[web-push:admin.icon-help]]</p>
 					</div>
+
+					<div class="mb-3 form-check form-switch">
+						<input type="checkbox" class="form-check-input" id="promptEnabled" name="promptEnabled">
+						<label class="form-check-label" for="promptEnabled">[[web-push:admin.prompt-enabled]]</label>
+						<p class="form-text">[[web-push:admin.prompt-enabled-help]]</p>
+					</div>
+
+					<div class="mb-3">
+						<label class="form-label" for="promptDelay">[[web-push:admin.prompt-delay]]</label>
+						<input type="number" min="1" max="100" id="promptDelay" name="promptDelay" title="[[web-push:admin.prompt-delay]]" class="form-control" placeholder="3">
+						<p class="form-text">[[web-push:admin.prompt-delay-help]]</p>
+					</div>
 				</div>
 			</form>
 

@@ -28,6 +28,15 @@
 	"admin.badge-help": "可选 — 覆盖所发送消息的徽章（通常显示在移动设备的通知栏中）。默认发送站点配置的"touch icon"。",
 	"admin.icon": "图标 URL",
 	"admin.icon-help": "可选 — 覆盖所发送消息的图标（可用于品牌宣传等）。默认发送站点配置的"touch icon"。",
+	"prompt.title": "保持最新动态",
+	"prompt.body": "启用推送通知，即使不在网站时也能及时收到提醒。",
+	"prompt.confirm": "启用通知",
+	"prompt.dismiss": "不，谢谢",
+
+	"admin.prompt-enabled": "向已登录用户显示订阅提示",
+	"admin.prompt-enabled-help": "启用后，在达到设定的访问次数后，会在屏幕角落显示一个邀请用户启用推送通知的小横幅。它不会阻挡页面，用户关闭或订阅后将不再显示。",
+	"admin.prompt-delay": "显示提示前的访问次数",
+	"admin.prompt-delay-help": "已登录用户需要访问多少次页面后才会显示订阅提示。最小值为 1。",
 	"admin.users": "用户",
 	"admin.user": "用户",
 	"admin.devices": "设备"

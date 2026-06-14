@@ -28,6 +28,15 @@
 	"admin.badge-help": "Optional — overrides the badge for messages sent (usually seen in the notification bar on mobile devices). By default, the site's configured \"touch icon\" is sent.",
 	"admin.icon": "Icon URL",
 	"admin.icon-help": "Optional — overrides the icon for messages sent (can be used for branding, etc.). By default, the site's configured \"touch icon\" is sent.",
+	"prompt.title": "Stay in the loop",
+	"prompt.body": "Enable push notifications to get alerted even when you're not on the site.",
+	"prompt.confirm": "Enable notifications",
+	"prompt.dismiss": "No thanks",
+
+	"admin.prompt-enabled": "Show opt-in prompt to logged-in users",
+	"admin.prompt-enabled-help": "When enabled, a small corner banner inviting users to enable push notifications appears after the configured number of page visits. It does not block the page, and is never shown again once the user dismisses it or subscribes.",
+	"admin.prompt-delay": "Show prompt after (page visits)",
+	"admin.prompt-delay-help": "Number of page visits a logged-in user must make before the opt-in prompt appears. Minimum 1.",
 	"admin.users": "Users",
 	"admin.user": "User",
 	"admin.devices": "Devices"
