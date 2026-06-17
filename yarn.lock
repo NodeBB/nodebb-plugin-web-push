@@ -380,10 +380,10 @@ escalade@^3.1.1, escalade@^3.2.0:
   resolved "https://registry.npmjs.org/escalade/-/escalade-3.2.0.tgz"
   integrity sha512-WUj2qlxaQtO4g6Pq5c29GTcWGDyd8itL8zTlipgECz3JesAiiOKotd8JU6otB3PACgG6xkJUyVhboMS+bje/jA==
 
-eslint-config-nodebb@^2.0.2:
-  version "2.0.2"
-  resolved "https://registry.npmjs.org/eslint-config-nodebb/-/eslint-config-nodebb-2.0.2.tgz"
-  integrity sha512-ZnAbPDET2fQeYI1OaEbBnpG7ThfH3zsmr1LCF+fzTYNs77ZtsUTo68GqTTpPWeLWTjy85mdnEiwX7Uo2ny4srw==
+eslint-config-nodebb@^2.0.3:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/eslint-config-nodebb/-/eslint-config-nodebb-2.0.3.tgz#a23c6dfd26e9310e30a3b995ce6de51fe661d223"
+  integrity sha512-dJJREiapn4zXEb0MidVIxS8+qoU5f+a+3cnk0pA4L7AFTd6xxL7hTDKuMmrjyqIB4Hb0Kz/rCyr0F3CVcCwIjg==
   dependencies:
     globals "17.3.0"
 
@@ -429,7 +429,7 @@ global-directory@^5.0.0:
 
 globals@17.3.0:
   version "17.3.0"
-  resolved "https://registry.npmjs.org/globals/-/globals-17.3.0.tgz"
+  resolved "https://registry.yarnpkg.com/globals/-/globals-17.3.0.tgz#8b96544c2fa91afada02747cc9731c002a96f3b9"
   integrity sha512-yMqGUQVVCkD4tqjOJf3TnrvaaHDMYp4VlUSObbkIiuCPe/ofdMBFIAcBbCSRFWOnos6qRiTVStDwqPLUclaxIw==
 
 http_ece@1.2.0:
