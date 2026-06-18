@@ -5,44 +5,47 @@
 		<div id="spy-container" class="col-12 col-md-8 px-0 mb-4" tabindex="0">
 			<form role="form" class="web-push-settings">
 				<div class="mb-4">
-					<h5 class="fw-bold tracking-tight settings-header">Settings</h5>
+					<h5 class="fw-bold tracking-tight settings-header">[[web-push:admin.settings]]</h5>
 
 					<div class="mb-3">
-						<label class="form-label" for="maxLength">Maximum length</label>
-						<input type="number" min="0" max="4096" id="maxLength" name="maxLength" title="Maximum message length" class="form-control" placeholder="256">
-						<p class="form-text">
-							Additional characters beyond this specified length will be truncated.
-							Due to a software limitation, if the message body is greater than 4096 bytes, the message itself will be an attachment in the push notification.
-						</p>
+						<label class="form-label" for="maxLength">[[web-push:admin.max-length]]</label>
+						<input type="number" min="0" max="4096" id="maxLength" name="maxLength" title="[[web-push:admin.max-length]]" class="form-control" placeholder="256">
+						<p class="form-text">[[web-push:admin.max-length-help]]</p>
 					</div>
 
 					<div class="mb-3">
-						<label class="form-label" for="badge">Badge URL</label>
-						<input type="text" id="badge" name="badge" title="Badge" class="form-control" placeholder="https://...">
-						<p class="form-text">
-							Optional — overrides the badge for messages sent (usually seen in the notification bar on mobile devices)
-							By default, the site's configured "touch icon" is sent.
-						</p>
+						<label class="form-label" for="badge">[[web-push:admin.badge]]</label>
+						<input type="text" id="badge" name="badge" title="[[web-push:admin.badge]]" class="form-control" placeholder="https://...">
+						<p class="form-text">[[web-push:admin.badge-help]]</p>
 					</div>
 
 					<div class="mb-3">
-						<label class="form-label" for="icon">Icon URL</label>
-						<input type="text" id="icon" name="icon" title="Icon" class="form-control" placeholder="https://...">
-						<p class="form-text">
-							Optional — overrides the icon for messages sent (can be used for branding, etc.)
-							By default, the site's configured "touch icon" is sent.
-						</p>
+						<label class="form-label" for="icon">[[web-push:admin.icon]]</label>
+						<input type="text" id="icon" name="icon" title="[[web-push:admin.icon]]" class="form-control" placeholder="https://...">
+						<p class="form-text">[[web-push:admin.icon-help]]</p>
+					</div>
+
+					<div class="mb-3 form-check form-switch">
+						<input type="checkbox" class="form-check-input" id="promptEnabled" name="promptEnabled">
+						<label class="form-check-label" for="promptEnabled">[[web-push:admin.prompt-enabled]]</label>
+						<p class="form-text">[[web-push:admin.prompt-enabled-help]]</p>
+					</div>
+
+					<div class="mb-3">
+						<label class="form-label" for="promptDelay">[[web-push:admin.prompt-delay]]</label>
+						<input type="number" min="1" max="100" id="promptDelay" name="promptDelay" title="[[web-push:admin.prompt-delay]]" class="form-control" placeholder="3">
+						<p class="form-text">[[web-push:admin.prompt-delay-help]]</p>
 					</div>
 				</div>
 			</form>
 
 			<div class="mb-4">
-				<h5 class="fw-bold tracking-tight settings-header">Users</h5>
+				<h5 class="fw-bold tracking-tight settings-header">[[web-push:admin.users]]</h5>
 				<table class="table">
 					<thead>
 						<tr>
-							<th>User</th>
-							<th>Devices</th>
+							<th>[[web-push:admin.user]]</th>
+							<th>[[web-push:admin.devices]]</th>
 						</tr>
 					</thead>
 					<tbody>

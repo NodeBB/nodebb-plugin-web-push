@@ -38,9 +38,12 @@ plugin.init = async (params) => {
 };
 
 plugin.appendConfig = async (config) => {
-	const { publicKey } = await meta.settings.get('web-push');
+	const { publicKey, promptEnabled, promptDelay } = await meta.settings.get('web-push');
 	config['web-push'] = {
 		vapidKey: publicKey,
+		// checkbox serialization varies by database and core version
+		promptEnabled: [true, 'true', 'on', 1, '1'].includes(promptEnabled),
+		promptDelay: Math.max(parseInt(promptDelay, 10) || 3, 1),
 	};
 
 	return config;
@@ -104,8 +107,8 @@ plugin.addRoutes = async ({ router, middleware, helpers }) => {
 		const { subscription } = req.body;
 		const payload = await constructPayload({
 			nid: utils.generateUUID(),
-			bodyShort: 'Test notification',
-			bodyLong: 'This is a test message sent from NodeBB',
+			bodyShort: '[[web-push:test.title]]',
+			bodyLong: '[[web-push:test.body]]',
 			path: `/me/web-push`,
 		}, req.uid, userLang);
 		await webPush.sendNotification(subscription, JSON.stringify(payload));
@@ -116,7 +119,7 @@ plugin.addAdminNavigation = (header) => {
 	header.plugins.push({
 		route: '/plugins/web-push',
 		icon: 'fa-tint',
-		name: 'Push Notifications (via Push API)',
+		name: '[[web-push:admin.menu-label]]',
 	});
 
 	return header;
@@ -239,12 +242,27 @@ async function constructPayload(notification, uid, lang) {
 		badge = `${nconf.get('url')}${meta.config['brand:maskableIcon'] || '/apple-touch-icon'}`;
 	}
 
+	const actions = await constructActions(lang);
+
 	return {
 		title,
 		body,
 		tag,
 		lang,
 		dir,
-		data: { url, icon, badge },
+		actions,
+		data: { url, icon, badge, nid },
 	};
+}
+
+async function constructActions(lang) {
+	const [markRead, viewNotifications] = await translator.translateKeys([
+		'[[web-push:action.mark-read]]',
+		'[[web-push:action.view-notifications]]',
+	], lang);
+
+	return [
+		{ action: 'mark-read', title: markRead },
+		{ action: 'view-notifications', title: viewNotifications },
+	];
 }
