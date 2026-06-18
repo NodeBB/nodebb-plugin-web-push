@@ -7,5 +7,28 @@
 	"profile.send-test": "Send Test Notification",
 
 	"toast.test_success": "Test notification sent.",
-	"toast.test_unavailable": "Cannot send test notification as push notifications are not enabled on this device."
+	"toast.subscribe_success": "Push notifications enabled on this device.",
+	"toast.test_unavailable": "Cannot send test notification as push notifications are not enabled on this device.",
+	"toast.permission_denied": "Notification permission was denied. Please enable notifications for this site in your browser settings.",
+	"toast.subscribe_failed": "Could not enable push notifications on this device. Please try again.",
+	"toast.unsupported": "This browser does not support push notifications.",
+	"toast.sw_not_registered": "Push notifications are unavailable: the background service is not registered. On iOS, install this site to your Home Screen first.",
+
+	"action.mark-read": "Mark as read",
+	"action.view-notifications": "View notifications",
+
+	"test.title": "Test notification",
+	"test.body": "This is a test message sent from NodeBB",
+
+	"admin.menu-label": "Push Notifications (via Push API)",
+	"admin.settings": "Settings",
+	"admin.max-length": "Maximum length",
+	"admin.max-length-help": "Additional characters beyond this specified length will be truncated. Due to a software limitation, if the message body is greater than 4096 bytes, the message itself will be an attachment in the push notification.",
+	"admin.badge": "Badge URL",
+	"admin.badge-help": "Optional — overrides the badge for messages sent (usually seen in the notification bar on mobile devices). By default, the site's configured \"touch icon\" is sent.",
+	"admin.icon": "Icon URL",
+	"admin.icon-help": "Optional — overrides the icon for messages sent (can be used for branding, etc.). By default, the site's configured \"touch icon\" is sent.",
+	"admin.users": "Users",
+	"admin.user": "User",
+	"admin.devices": "Devices"
 }

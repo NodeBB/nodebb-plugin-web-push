@@ -7,10 +7,26 @@ import { success, warning } from 'alerts';
 export async function init() {
 	const containerEl = document.querySelector('[component="web-push-form"]');
 	if (!containerEl) {
-		console.error('Web Push form container not found');
 		return;
 	}
-	const registration = await navigator.serviceWorker.ready;
+
+	if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+		warning('[[web-push:toast.unsupported]]');
+		return;
+	}
+
+	// navigator.serviceWorker.ready hangs forever if no SW is registered; race against a timeout.
+	const registration = await Promise.race([
+		navigator.serviceWorker.ready,
+		new Promise((_, reject) => setTimeout(() => reject(), 5000)),
+	]).catch(() => {
+		warning('[[web-push:toast.sw_not_registered]]');
+		return null;
+	});
+	if (!registration) {
+		return;
+	}
+
 	let subscription = await registration.pushManager.getSubscription();
 	const convertedVapidKey = urlBase64ToUint8Array(config['web-push'].vapidKey);
 
@@ -33,27 +49,48 @@ export async function init() {
 				case 'toggle': {
 					const countEl = document.querySelector('#deviceCount strong');
 					if (!subscription) {
+						if (Notification.permission === 'denied') {
+							subselector.checked = false;
+							warning('[[web-push:toast.permission_denied]]');
+							document.getElementById('permission-warning').classList.remove('d-none');
+							break;
+						}
+
 						try {
+							if (Notification.permission !== 'granted') {
+								const permission = await Notification.requestPermission();
+								if (permission !== 'granted') {
+									subselector.checked = false;
+									warning('[[web-push:toast.permission_denied]]');
+									document.getElementById('permission-warning').classList.remove('d-none');
+									break;
+								}
+							}
+
 							subscription = await registration.pushManager.subscribe({
 								userVisibleOnly: true,
 								applicationServerKey: convertedVapidKey,
 							});
 
 							await post('/plugins/web-push/subscription', { subscription: subscription.toJSON() });
+							success('[[web-push:toast.subscribe_success]]');
 
-							// Update count
 							let count = parseInt(countEl.textContent, 10);
-							count += 1;
-							countEl.innerText = count;
-						} catch (e) {
+							countEl.innerText = count + 1;
+						} catch (err) {
 							subselector.checked = false;
+							const stale = await registration.pushManager.getSubscription();
+							if (stale) {
+								await stale.unsubscribe();
+							}
+							subscription = null;
+							warning('[[web-push:toast.subscribe_failed]]');
 						}
 					} else {
 						await subscription.unsubscribe();
 						await del('/plugins/web-push/subscription', { subscription: subscription.toJSON() });
 						let count = parseInt(countEl.textContent, 10);
-						count -= 1;
-						countEl.innerText = count;
+						countEl.innerText = count - 1;
 						subscription = null;
 					}
 
@@ -68,19 +105,15 @@ export async function init() {
 		enabledEl.checked = true;
 	}
 
-	// Show permission warning if applicable
 	const state = await registration.pushManager.permissionState({
 		userVisibleOnly: true,
 		applicationServerKey: convertedVapidKey,
 	});
 	if (state === 'denied') {
-		const warningEl = document.getElementById('permission-warning');
-		warningEl.classList.remove('d-none');
+		document.getElementById('permission-warning').classList.remove('d-none');
 	}
 }
 
-// This function is needed because Chrome doesn't accept a base64 encoded string
-// as value for applicationServerKey in pushManager.subscribe yet
 // https://bugs.chromium.org/p/chromium/issues/detail?id=802280
 function urlBase64ToUint8Array(base64String) {
 	const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
