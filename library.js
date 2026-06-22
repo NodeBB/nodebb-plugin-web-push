@@ -105,7 +105,8 @@ plugin.addRoutes = async ({ router, middleware, helpers }) => {
 		const payload = await constructPayload({
 			nid: utils.generateUUID(),
 			bodyShort: 'Test notification',
-			bodyLong: 'This is a test message sent from NodeBB',
+			// test notification shouln't show any html chars
+			bodyLong: 'This is a &lt;bdi&gt;test&lt;/bid&gt; message sent from <strong>NodeBB</strong>',
 			path: `/me/web-push`,
 		}, req.uid, userLang);
 		await webPush.sendNotification(subscription, JSON.stringify(payload));
@@ -218,7 +219,7 @@ async function constructPayload(notification, uid, lang) {
 	const { nid, mergeId, bodyShort, bodyLong, path } = notification;
 
 	let [title, body] = await translator.translateKeys([bodyShort, bodyLong], lang);
-	([title, body] = [title, body].map(str => validator.unescape(utils.stripHTMLTags(str))));
+	([title, body] = [title, body].map(str => utils.stripHTMLTags(utils.decodeHTMLEntities(str))));
 	title = `${dir === 'rtl' ? '\u200f' : '\u200e'}${title}`;
 	const tag = mergeId || nid;
 	const url = `${nconf.get('url')}${path}`;
