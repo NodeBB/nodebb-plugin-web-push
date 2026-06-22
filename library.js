@@ -105,8 +105,8 @@ plugin.addRoutes = async ({ router, middleware, helpers }) => {
 		const payload = await constructPayload({
 			nid: utils.generateUUID(),
 			bodyShort: 'Test notification',
-			// test notification shouln't show any html chars
-			bodyLong: 'This is a &lt;bdi&gt;test&lt;/bid&gt; message sent from <strong>NodeBB</strong>',
+			// test notification shouldn't show any html chars
+			bodyLong: 'This is a &lt;bdi&gt;test&lt;/bdi&gt; message sent from <strong>NodeBB</strong>',
 			path: `/me/web-push`,
 		}, req.uid, userLang);
 		await webPush.sendNotification(subscription, JSON.stringify(payload));
