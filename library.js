@@ -218,7 +218,7 @@ async function constructPayload(notification, uid, lang) {
 
 	const { nid, mergeId, bodyShort, bodyLong, path } = notification;
 
-	let [title, body] = await translator.translateKeys([bodyShort, bodyLong], lang);
+	let [title, body] = await translator.translateKeys([bodyShort || '', bodyLong || ''], lang);
 	([title, body] = [title, body].map(str => utils.stripHTMLTags(utils.decodeHTMLEntities(str))));
 	title = `${dir === 'rtl' ? '\u200f' : '\u200e'}${title}`;
 	const tag = mergeId || nid;
