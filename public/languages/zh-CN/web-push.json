@@ -25,9 +25,9 @@
 	"admin.max-length": "最大长度",
 	"admin.max-length-help": "超出指定长度的字符将被截断。由于软件限制，如果消息正文超过 4096 字节，消息本身将作为附件随推送通知发送。",
 	"admin.badge": "徽章 URL",
-	"admin.badge-help": "可选 — 覆盖所发送消息的徽章（通常显示在移动设备的通知栏中）。默认发送站点配置的"touch icon"。",
+	"admin.badge-help": "可选 — 覆盖所发送消息的徽章（通常显示在移动设备的通知栏中）。默认发送站点配置的 touch icon。",
 	"admin.icon": "图标 URL",
-	"admin.icon-help": "可选 — 覆盖所发送消息的图标（可用于品牌宣传等）。默认发送站点配置的"touch icon"。",
+	"admin.icon-help": "可选 — 覆盖所发送消息的图标（可用于品牌宣传等）。默认发送站点配置的 touch icon。",
 	"admin.users": "用户",
 	"admin.user": "用户",
 	"admin.devices": "设备"
