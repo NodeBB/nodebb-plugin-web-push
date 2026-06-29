@@ -5,6 +5,12 @@
 	"profile.devices": "Currently notifying <strong>%1</strong> device(s).",
 	"profile.permissionBlocked": "Your device is currently disallowing notifications from this site. Please grant the notification permission to continue.",
 	"profile.send-test": "Send Test Notification",
+	"profile.device": "Device",
+	"profile.browser": "Browser",
+	"profile.os": "OS",
+	"profile.no-devices": "No devices registered.",
+	"profile.remove": "Remove",
+	"profile.unknown": "Unknown",
 
 	"toast.test_success": "Test notification sent.",
 	"toast.test_unavailable": "Cannot send test notification as push notifications are not enabled on this device."

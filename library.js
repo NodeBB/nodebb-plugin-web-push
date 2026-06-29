@@ -81,7 +81,13 @@ plugin.addRoutes = async ({ router, middleware, helpers }) => {
 		}
 
 		const { subscription } = req.body;
-		await subscriptions.add(req.uid, subscription);
+		const device = req.useragent ? {
+			browser: req.useragent.browser,
+			version: req.useragent.version,
+			os: req.useragent.os,
+			platform: req.useragent.platform,
+		} : undefined;
+		await subscriptions.add(req.uid, subscription, device);
 		helpers.formatApiResponse(200, res);
 	});
 
