@@ -108,6 +108,23 @@ plugin.addRoutes = async ({ router, middleware, helpers }) => {
 
 		const { userLang } = await user.getSettings(req.uid);
 		const { subscription } = req.body;
+
+		// Resolve the requested endpoint against the user's saved subscriptions
+		// to prevent server-side request forgery via arbitrary endpoint injection.
+		const endpoint = subscription?.endpoint?.trim();
+		if (!endpoint) {
+			return helpers.formatApiResponse(400, res);
+		}
+
+		const [owned, stored] = await Promise.all([
+			db.isSortedSetMember(`uid:${req.uid}:web-push:subscriptions`, endpoint),
+			db.getObject(`web-push:subscriptions:${endpoint}`),
+		]);
+
+		if (!owned || !stored) {
+			return helpers.formatApiResponse(404, res);
+		}
+
 		const payload = await constructPayload({
 			nid: utils.generateUUID(),
 			bodyShort: 'Test notification',
