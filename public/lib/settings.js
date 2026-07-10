@@ -32,7 +32,6 @@ export async function init() {
 
 				case 'remove': {
 					const endpoint = subselector.getAttribute('data-endpoint');
-					console.log('remove', endpoint);
 					await del('/plugins/web-push/subscription', { subscription: { endpoint } });
 					ajaxify.refresh();
 					break;
