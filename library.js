@@ -1,7 +1,6 @@
 'use strict';
 
 const webPush = require('web-push');
-const validator = require('validator');
 
 const nconf = nodebb.require('nconf');
 const winston = nodebb.require('winston');
