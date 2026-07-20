@@ -169,7 +169,9 @@ plugin.onNotificationPush = async ({ notification, uidsNotified: uids }) => {
 			} catch (e) {
 				// Errored — remove subscription from user
 				winston.info(`[plugins/web-push] Push failed: ${e.code}; ${e.message}; statusCode: ${e.statusCode}`);
-				// subscriptions.remove(uid, subscription);
+				if (e.statusCode === 410) {
+					await subscriptions.remove(uid, subscription);
+				}
 			}
 		});
 	});
