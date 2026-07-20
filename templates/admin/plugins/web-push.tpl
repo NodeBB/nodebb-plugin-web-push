@@ -49,7 +49,7 @@
 						{{{ each users }}}
 						<tr>
 							<td>
-								{buildAvatar(users, "24px", false)}
+								{{buildAvatar(users, "24px", false)}}
 								{./username}
 							</td>
 							<td>{./deviceCount}</td>
