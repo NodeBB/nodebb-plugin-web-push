@@ -126,9 +126,8 @@ plugin.addRoutes = async ({ router, middleware, helpers }) => {
 
 		const payload = await constructPayload({
 			nid: utils.generateUUID(),
-			bodyShort: 'Test notification',
-			// test notification shouldn't show any html chars
-			bodyLong: 'This is a &lt;bdi&gt;test&lt;/bdi&gt; message sent from <strong>NodeBB</strong>',
+			bodyShort: '[[web-push:test.title]]',
+			bodyLong: '[[web-push:test.body]]',
 			path: `/me/web-push`,
 		}, req.uid, userLang);
 		await webPush.sendNotification(subscription, JSON.stringify(payload));
@@ -139,7 +138,7 @@ plugin.addAdminNavigation = (header) => {
 	header.plugins.push({
 		route: '/plugins/web-push',
 		icon: 'fa-tint',
-		name: 'Push Notifications (via Push API)',
+		name: '[[web-push:admin.menu-label]]',
 	});
 
 	return header;
