@@ -20,5 +20,8 @@
 	"staticDirs": {
 		"static": "./static"
 	},
-	"templates": "templates"
+	"templates": "templates",
+    "upgrades": [
+        "upgrades/web_push_migrate.js"
+	]
 }

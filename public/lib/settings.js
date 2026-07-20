@@ -17,7 +17,7 @@ export async function init() {
 	containerEl.addEventListener('click', async (e) => {
 		const subselector = e.target.closest('[data-action]');
 		if (subselector) {
-			const action = e.target.getAttribute('data-action');
+			const action = subselector.getAttribute('data-action');
 
 			switch (action) {
 				case 'test': {
@@ -30,8 +30,14 @@ export async function init() {
 					break;
 				}
 
+				case 'remove': {
+					const endpoint = subselector.getAttribute('data-endpoint');
+					await del('/plugins/web-push/subscription', { subscription: { endpoint } });
+					ajaxify.refresh();
+					break;
+				}
+
 				case 'toggle': {
-					const countEl = document.querySelector('#deviceCount strong');
 					if (!subscription) {
 						try {
 							subscription = await registration.pushManager.subscribe({
@@ -40,21 +46,15 @@ export async function init() {
 							});
 
 							await post('/plugins/web-push/subscription', { subscription: subscription.toJSON() });
-
-							// Update count
-							let count = parseInt(countEl.textContent, 10);
-							count += 1;
-							countEl.innerText = count;
+							ajaxify.refresh();
 						} catch (e) {
 							subselector.checked = false;
 						}
 					} else {
 						await subscription.unsubscribe();
 						await del('/plugins/web-push/subscription', { subscription: subscription.toJSON() });
-						let count = parseInt(countEl.textContent, 10);
-						count -= 1;
-						countEl.innerText = count;
 						subscription = null;
+						ajaxify.refresh();
 					}
 
 					break;
@@ -64,8 +64,12 @@ export async function init() {
 	});
 
 	const enabledEl = document.getElementById('enabled');
-	if (subscription) {
+	const devices = ajaxify.data.devices || [];
+	if (subscription && devices.some(d => d.endpoint === subscription.endpoint)) {
 		enabledEl.checked = true;
+	} else if (subscription) {
+		await subscription.unsubscribe();
+		subscription = null;
 	}
 
 	// Show permission warning if applicable
