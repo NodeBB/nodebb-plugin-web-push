@@ -6,6 +6,7 @@ const nconf = nodebb.require('nconf');
 const winston = nodebb.require('winston');
 
 const db = nodebb.require('./src/database');
+const request = nodebb.require('./src/request');
 const user = nodebb.require('./src/user');
 const meta = nodebb.require('./src/meta');
 const utils = nodebb.require('./src/utils');
@@ -130,7 +131,14 @@ plugin.addRoutes = async ({ router, middleware, helpers }) => {
 			bodyLong: '[[web-push:test.body]]',
 			path: `/me/web-push`,
 		}, req.uid, userLang);
-		await webPush.sendNotification(subscription, JSON.stringify(payload));
+
+		// Guard against SSRF — validate the stored endpoint is not a reserved IP.
+		const { ok } = await request.check(stored.endpoint);
+		if (!ok) {
+			return helpers.formatApiResponse(400, res);
+		}
+
+		await webPush.sendNotification(stored, JSON.stringify(payload));
 	});
 };
 
