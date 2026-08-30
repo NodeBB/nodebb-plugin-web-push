@@ -139,6 +139,7 @@ plugin.addRoutes = async ({ router, middleware, helpers }) => {
 		}
 
 		await webPush.sendNotification(stored, JSON.stringify(payload));
+		helpers.formatApiResponse(200, res);
 	});
 };
 
