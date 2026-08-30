@@ -196,7 +196,7 @@ plugin.onNotificationRescind = async ({ nids }) => {
 
 	Promise.all(Array.from(tags).map(async (tag, idx) => {
 		let subs = await subscriptions.list(recipients[idx]);
-		subs = new Set(...Object.values(Object.fromEntries(subs))); // wtf
+		subs = new Set(Array.from(subs.values()).flatMap(set => Array.from(set)));
 
 		if (subs.size) {
 			await Promise.all(Array.from(subs).map(async (subscription) => {
