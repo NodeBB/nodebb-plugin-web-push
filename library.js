@@ -244,7 +244,16 @@ async function constructPayload(notification, uid, lang) {
 		const related = await notifications.findRelated([notification.mergeId], `uid:${uid}:notifications:unread`);
 		const merged = await notifications.getMultiple(related).then(notifications.merge);
 		if (merged.length) {
-			notification = merged.pop();
+			// Use the merged title (e.g. "3 new messages from …"), but keep the body and link of
+			// the notification that triggered this push. The merged object is built from the first
+			// notification in the set, so its bodyLong/path would otherwise always show the
+			// first message instead of the newest one.
+			const { bodyLong, path } = notification;
+			notification = {
+				...merged.pop(),
+				...(bodyLong && { bodyLong }),
+				...(path && { path }),
+			};
 		}
 	}
 
