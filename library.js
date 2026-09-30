@@ -17,6 +17,7 @@ const routeHelpers = nodebb.require('./src/routes/helpers');
 
 const controllers = require('./lib/controllers');
 const subscriptions = require('./lib/subscriptions');
+const unread = require('./lib/unread');
 
 const plugin = module.exports;
 
@@ -48,7 +49,12 @@ plugin.appendConfig = async (config) => {
 
 plugin.registerServiceWorker = async (data) => {
 	const { scripts } = data;
-	scripts.add(`nodebb-plugin-web-push/static/web-push.js`);
+	// The static file is served with a long max-age and imported scripts are fetched through the
+	// HTTP cache, so without a cache buster the generated service-worker.js never changes and
+	// browsers keep running the old code after the plugin is upgraded. The buster changes on every
+	// build, which makes browsers install the updated service worker.
+	const buster = meta.config['cache-buster'];
+	scripts.add(`nodebb-plugin-web-push/static/web-push.js${buster ? `?${buster}` : ''}`);
 	return data;
 };
 
@@ -99,6 +105,17 @@ plugin.addRoutes = async ({ router, middleware, helpers }) => {
 		const { subscription } = req.body;
 		await subscriptions.remove(req.uid, subscription);
 		helpers.formatApiResponse(200, res);
+	});
+
+	// Used by the service worker to close notifications that were already read elsewhere
+	routeHelpers.setupApiRoute(router, 'get', '/web-push/unread-tags', middlewares, async (req, res) => {
+		if (!req.uid) {
+			return helpers.notAllowed(req, res);
+		}
+
+		helpers.formatApiResponse(200, res, {
+			tags: await unread.getTags(req.uid),
+		});
 	});
 
 	routeHelpers.setupApiRoute(router, 'post', '/web-push/test', middlewares, async (req, res) => {
@@ -190,8 +207,10 @@ plugin.onNotificationRescind = async ({ nids }) => {
 	let mergeIds = await db.getObjectsFields(notificationKeys, ['mergeId']);
 	mergeIds = mergeIds.map(o => o.mergeId);
 
-	// Favour mergeIds over nids, then eliminate dupes
-	const tags = new Set(notificationKeys.map((key, i) => mergeIds[i] || key));
+	// Favour mergeIds over nids, then eliminate dupes. The fallback must be the bare nid
+	// (not the `notifications:<nid>` key), as that is the tag used in the push payload and
+	// in the `web-push:nid:<tag>:uids` recipient set.
+	const tags = new Set(nids.map((nid, i) => mergeIds[i] || nid));
 	const recipients = await db.getSetsMembers(Array.from(tags).map(tag => `web-push:nid:${tag}:uids`));
 
 	Promise.all(Array.from(tags).map(async (tag, idx) => {

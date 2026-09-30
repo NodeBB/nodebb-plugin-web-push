@@ -12,6 +12,9 @@
 		{ "hook": "filter:user.profileMenu", "method": "addProfileItem" },
 		{ "hook": "filter:service-worker.scripts", "method": "registerServiceWorker" }
 	],
+	"scripts": [
+		"public/lib/main.js"
+	],
 	"languages": "public/languages",
 	"modules": {
 		"../client/account/web-push.js": "./public/lib/settings.js",
