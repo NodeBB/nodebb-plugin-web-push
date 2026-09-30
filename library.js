@@ -79,7 +79,12 @@ plugin.appendConfig = async (config) => {
 
 plugin.registerServiceWorker = async (data) => {
 	const { scripts } = data;
-	scripts.add(`nodebb-plugin-web-push/static/web-push.js`);
+	// The static file is served with a long max-age and imported scripts are fetched through the
+	// HTTP cache, so without a cache buster the generated service-worker.js never changes and
+	// browsers keep running the old code after the plugin is upgraded. The buster changes on every
+	// build, which makes browsers install the updated service worker.
+	const buster = meta.config['cache-buster'];
+	scripts.add(`nodebb-plugin-web-push/static/web-push.js${buster ? `?${buster}` : ''}`);
 	return data;
 };
 
