@@ -190,8 +190,10 @@ plugin.onNotificationRescind = async ({ nids }) => {
 	let mergeIds = await db.getObjectsFields(notificationKeys, ['mergeId']);
 	mergeIds = mergeIds.map(o => o.mergeId);
 
-	// Favour mergeIds over nids, then eliminate dupes
-	const tags = new Set(notificationKeys.map((key, i) => mergeIds[i] || key));
+	// Favour mergeIds over nids, then eliminate dupes. The fallback must be the bare nid
+	// (not the `notifications:<nid>` key), as that is the tag used in the push payload and
+	// in the `web-push:nid:<tag>:uids` recipient set.
+	const tags = new Set(nids.map((nid, i) => mergeIds[i] || nid));
 	const recipients = await db.getSetsMembers(Array.from(tags).map(tag => `web-push:nid:${tag}:uids`));
 
 	Promise.all(Array.from(tags).map(async (tag, idx) => {
