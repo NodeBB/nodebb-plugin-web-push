@@ -17,6 +17,7 @@ const routeHelpers = nodebb.require('./src/routes/helpers');
 
 const controllers = require('./lib/controllers');
 const subscriptions = require('./lib/subscriptions');
+const unread = require('./lib/unread');
 
 const plugin = module.exports;
 
@@ -129,6 +130,17 @@ plugin.addRoutes = async ({ router, middleware, helpers }) => {
 		const { subscription } = req.body;
 		await subscriptions.remove(req.uid, subscription);
 		helpers.formatApiResponse(200, res);
+	});
+
+	// Used by the service worker to close notifications that were already read elsewhere
+	routeHelpers.setupApiRoute(router, 'get', '/web-push/unread-tags', middlewares, async (req, res) => {
+		if (!req.uid) {
+			return helpers.notAllowed(req, res);
+		}
+
+		helpers.formatApiResponse(200, res, {
+			tags: await unread.getTags(req.uid),
+		});
 	});
 
 	routeHelpers.setupApiRoute(router, 'post', '/web-push/test', middlewares, async (req, res) => {
