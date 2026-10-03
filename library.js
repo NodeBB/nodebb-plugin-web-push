@@ -20,6 +20,36 @@ const subscriptions = require('./lib/subscriptions');
 
 const plugin = module.exports;
 
+// Apple's push service (Safari, iOS/iPadOS home-screen apps) only accepts pushes that display a
+// notification. Pushes that do not (like the "close this notification" push of .rescind) count
+// against the site, and after a few of them the subscription is revoked: the toggle on the
+// device turns itself off. .rescind therefore skips these endpoints.
+const SILENT_PUSH_UNSUPPORTED = new Set(['web.push.apple.com']);
+
+// Push services reject payloads over 4096 bytes (encrypted); keep ours well below that.
+const MAX_PAYLOAD_BYTES = 3500;
+
+function endpointHost(subscription) {
+	try {
+		return new URL(subscription.endpoint).host;
+	} catch (e) {
+		return '';
+	}
+}
+
+// One place for every failed send: log it with the push service and its answer, and drop the
+// subscription when it can never work again (expired / unsubscribed / unusable keys).
+async function onSendError(uid, subscription, e) {
+	const body = typeof e.body === 'string' ? e.body.replace(/\s+/g, ' ').slice(0, 200) : '';
+	const gone = e.statusCode === 404 || e.statusCode === 410 ||
+		e.code === 'ERR_CRYPTO_ECDH_INVALID_PUBLIC_KEY' || /public key|auth secret|p256dh/i.test(e.message || '');
+	winston.info(`[plugins/web-push] Push failed (uid ${uid}, ${endpointHost(subscription) || 'invalid endpoint'}): ` +
+		`${e.code}; ${e.message}; statusCode: ${e.statusCode}${body ? `; ${body}` : ''}${gone ? ' – subscription removed' : ''}`);
+	if (gone && uid) {
+		await subscriptions.remove(uid, subscription).catch(err => winston.warn(`[plugins/web-push] ${err.message}`));
+	}
+}
+
 plugin.init = async (params) => {
 	const { router, middleware/* , controllers */ } = params;
 	const accountMiddlewares = [
@@ -138,7 +168,12 @@ plugin.addRoutes = async ({ router, middleware, helpers }) => {
 			return helpers.formatApiResponse(400, res);
 		}
 
-		await webPush.sendNotification(stored, JSON.stringify(payload));
+		try {
+			await webPush.sendNotification(stored, JSON.stringify(payload));
+		} catch (e) {
+			await onSendError(req.uid, stored, e);
+			return helpers.formatApiResponse(400, res, new Error('[[web-push:toast.test_unavailable]]'));
+		}
 		helpers.formatApiResponse(200, res);
 	});
 };
@@ -175,11 +210,7 @@ plugin.onNotificationPush = async ({ notification, uidsNotified: uids }) => {
 			try {
 				await webPush.sendNotification(subscription, JSON.stringify(payload));
 			} catch (e) {
-				// Errored — remove subscription from user
-				winston.info(`[plugins/web-push] Push failed: ${e.code}; ${e.message}; statusCode: ${e.statusCode}`);
-				if (e.statusCode === 410) {
-					await subscriptions.remove(uid, subscription);
-				}
+				await onSendError(uid, subscription, e);
 			}
 		});
 	});
@@ -195,18 +226,23 @@ plugin.onNotificationRescind = async ({ nids }) => {
 	const recipients = await db.getSetsMembers(Array.from(tags).map(tag => `web-push:nid:${tag}:uids`));
 
 	Promise.all(Array.from(tags).map(async (tag, idx) => {
-		let subs = await subscriptions.list(recipients[idx]);
-		subs = new Set(Array.from(subs.values()).flatMap(set => Array.from(set)));
-
-		if (subs.size) {
-			await Promise.all(Array.from(subs).map(async (subscription) => {
-				try {
-					await webPush.sendNotification(subscription, JSON.stringify({ tag }));
-				} catch (e) {
-					winston.info(`[plugins/web-push] Push failed: ${e.code}; ${e.message}; statusCode: ${e.statusCode}`);
+		const subsByUid = await subscriptions.list(recipients[idx]);
+		const targets = [];
+		subsByUid.forEach((set, uid) => {
+			set.forEach((subscription) => {
+				if (!SILENT_PUSH_UNSUPPORTED.has(endpointHost(subscription))) {
+					targets.push([uid, subscription]);
 				}
-			}));
-		}
+			});
+		});
+
+		await Promise.all(targets.map(async ([uid, subscription]) => {
+			try {
+				await webPush.sendNotification(subscription, JSON.stringify({ tag }));
+			} catch (e) {
+				await onSendError(uid, subscription, e);
+			}
+		}));
 	})).catch(err => winston.error(err.stack));
 };
 
@@ -281,7 +317,7 @@ async function constructPayload(notification, uid, lang) {
 		badge = `${nconf.get('url')}${meta.config['brand:maskableIcon'] || '/apple-touch-icon'}`;
 	}
 
-	return {
+	const payload = {
 		title,
 		body,
 		tag,
@@ -289,4 +325,17 @@ async function constructPayload(notification, uid, lang) {
 		dir,
 		data: { url, icon, badge },
 	};
+
+	// maxLength counts characters, but push services limit bytes, and non-Latin text takes two or
+	// more bytes per character (a long Hebrew post failed with 413). Shorten the body, then the
+	// title, until the whole payload fits.
+	const size = () => Buffer.byteLength(JSON.stringify(payload));
+	while (size() > MAX_PAYLOAD_BYTES && payload.body.length > 1) {
+		const cut = Math.max(1, Math.ceil((size() - MAX_PAYLOAD_BYTES) / 2) + 1);
+		payload.body = `${payload.body.slice(0, Math.max(0, payload.body.length - cut - 1))}…`;
+	}
+	while (size() > MAX_PAYLOAD_BYTES && payload.title.length > 1) {
+		payload.title = `${payload.title.slice(0, Math.max(0, payload.title.length - 50))}…`;
+	}
+	return payload;
 }

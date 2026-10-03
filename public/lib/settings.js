@@ -68,8 +68,17 @@ export async function init() {
 	if (subscription && devices.some(d => d.endpoint === subscription.endpoint)) {
 		enabledEl.checked = true;
 	} else if (subscription) {
-		await subscription.unsubscribe();
-		subscription = null;
+		// The browser is subscribed but the forum does not know this endpoint: the browser renewed
+		// it (Safari/iOS do this on their own), or the forum dropped it after a failed send. Register
+		// it again instead of unsubscribing, which switched notifications off by itself.
+		try {
+			await post('/plugins/web-push/subscription', { subscription: subscription.toJSON() });
+			enabledEl.checked = true;
+			ajaxify.refresh();
+			return;
+		} catch (e) {
+			subscription = null;
+		}
 	}
 
 	// Show permission warning if applicable
