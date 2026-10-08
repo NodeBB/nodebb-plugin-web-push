@@ -25,6 +25,11 @@ const plugin = module.exports;
 // notification. Pushes that do not (like the "close this notification" push of .rescind) count
 // against the site, and after a few of them the subscription is revoked: the toggle on the
 // device turns itself off. .rescind therefore skips these endpoints.
+// iOS/iPadOS also ignore Notification#close() and the `tag` of a new notification (tested on
+// iOS 27.2: getNotifications() lists them, close() resolves, but they stay in Notification Center,
+// and a notification with the same tag is added instead of replacing the old one), so a site
+// cannot clear notifications there at all. What these devices do support is the app icon badge:
+// every push carries the unread count, and the service worker keeps the badge in sync.
 const SILENT_PUSH_UNSUPPORTED = new Set(['web.push.apple.com']);
 
 // Push services reject payloads over 4096 bytes (encrypted); keep ours well below that.
@@ -143,9 +148,11 @@ plugin.addRoutes = async ({ router, middleware, helpers }) => {
 			return helpers.notAllowed(req, res);
 		}
 
-		helpers.formatApiResponse(200, res, {
-			tags: await unread.getTags(req.uid),
-		});
+		const [tags, count] = await Promise.all([
+			unread.getTags(req.uid),
+			user.notifications.getUnreadCount(req.uid),
+		]);
+		helpers.formatApiResponse(200, res, { tags, count });
 	});
 
 	routeHelpers.setupApiRoute(router, 'post', '/web-push/test', middlewares, async (req, res) => {
@@ -216,7 +223,13 @@ plugin.onNotificationPush = async ({ notification, uidsNotified: uids }) => {
 	db.pexpire(refKey, 1000 * 60 * 60 * 48); // only track last 48 hours
 
 	let payloads = await Promise.all(uids.map(async (uid, idx) => {
-		const payload = await constructPayload(notification, uid, userSettings[idx].userLang);
+		const [payload, unreadCount] = await Promise.all([
+			constructPayload(notification, uid, userSettings[idx].userLang),
+			user.notifications.getUnreadCount(uid),
+		]);
+		// The number on the app icon. iOS/iPadOS cannot remove notifications that are already shown
+		// (see SILENT_PUSH_UNSUPPORTED), so the icon badge is what tells how many are still unread.
+		payload.unread = unreadCount;
 		return [uid, payload];
 	}));
 	payloads = new Map(payloads);
