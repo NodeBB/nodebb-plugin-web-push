@@ -81,6 +81,23 @@ self.addEventListener('message', (event) => {
 	}
 });
 
+// The page a tapped notification should open, when an existing window is focused. iOS/iPadOS
+// suspends a home-screen app in the background: the message sent to it is dropped, and the
+// service worker itself is stopped right after the click, so the url is kept in Cache Storage,
+// which the page reads when it becomes visible again (public/lib/main.js).
+const WEB_PUSH_PENDING_CACHE = 'web-push-pending';
+const WEB_PUSH_PENDING_KEY = '/__web-push-pending';
+async function webPushSetPending(url) {
+	try {
+		const cache = await caches.open(WEB_PUSH_PENDING_CACHE);
+		await cache.put(WEB_PUSH_PENDING_KEY, new Response(JSON.stringify({ url, at: Date.now() }), {
+			headers: { 'content-type': 'application/json' },
+		}));
+	} catch (e) {
+		// no Cache Storage – the message below is all we have
+	}
+}
+
 self.addEventListener('notificationclick', (event) => {
 	event.notification.close();
 	let target;
@@ -88,22 +105,33 @@ self.addEventListener('notificationclick', (event) => {
 		target = new URL(event.notification.data.url);
 	}
 
+	// Stored first, in every case: on iOS/iPadOS the app may come to the front before this handler
+	// runs, or matchAll may not see the suspended window; the page picks the url up either way.
+	const targetUrl = target ? target.pathname + target.search + target.hash : null;
+	const pending = target ? webPushSetPending(targetUrl) : Promise.resolve();
+
 	// This looks to see if the current is already open and focuses if it is
-	event.waitUntil(
-		self.clients
-			.matchAll({ type: 'window' })
-			.then((clientList) => {
-				for (const client of clientList) {
-					const { hostname } = new URL(client.url);
-					if (target && hostname === target.hostname && 'focus' in client) {
-						client.postMessage({
-							action: 'ajaxify',
-							url: target.pathname,
-						});
-						return client.focus();
-					}
+	event.waitUntil(pending.then(() => self.clients
+		.matchAll({ type: 'window' })
+		.then((clientList) => {
+			// iOS/iPadOS home-screen apps have a single window: openWindow loads the page in it,
+			// while a message to the suspended window is lost. Also try navigate() where available.
+			const ua = (self.navigator && self.navigator.userAgent) || '';
+			if (target && /iPhone|iPad|iPod/.test(ua) && self.clients.openWindow) {
+				const own = clientList.find(c => new URL(c.url).hostname === target.hostname);
+				if (own && 'navigate' in own) {
+					return own.navigate(targetUrl).then(c => (c || own).focus()).catch(() => self.clients.openWindow(targetUrl));
 				}
-				if (self.clients.openWindow) return self.clients.openWindow(target.pathname);
-			})
+				return self.clients.openWindow(targetUrl);
+			}
+			for (const client of clientList) {
+				const { hostname } = new URL(client.url);
+				if (target && hostname === target.hostname && 'focus' in client) {
+					client.postMessage({ action: 'web-push:open', url: targetUrl });
+					return client.focus();
+				}
+			}
+			if (target && self.clients.openWindow) return self.clients.openWindow(targetUrl);
+		}))
 	);
 });
