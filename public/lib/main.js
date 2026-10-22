@@ -48,8 +48,74 @@
 	document.addEventListener('visibilitychange', () => {
 		if (document.visibilityState === 'visible') {
 			sync();
+			openPending();
 		}
 	});
+	window.addEventListener('focus', openPending);
+	window.addEventListener('pageshow', openPending);
+
+	// A tapped notification opens its page. The service worker sends 'web-push:open' when it focuses
+	// this window, and also keeps the url in Cache Storage for a minute: on iOS/iPadOS the message is
+	// lost while the app is suspended in the background, so the page looks there as soon as it is
+	// visible again. Whichever comes first opens the page and removes the stored url.
+	function openUrl(url) {
+		if (typeof url !== 'string' || !url.startsWith('/')) {
+			return;
+		}
+		const here = window.location.pathname + window.location.search + window.location.hash;
+		if (url === here) {
+			return;
+		}
+		if (ajaxify.check(url)) {
+			ajaxify.go(url);
+		} else {
+			window.location.href = url;
+		}
+	}
+	async function takePending() {
+		try {
+			const cache = await caches.open('web-push-pending');
+			const res = await cache.match('/__web-push-pending');
+			if (!res) {
+				return null;
+			}
+			await cache.delete('/__web-push-pending');
+			const { url, at } = await res.json();
+			return Date.now() - at < 60000 ? url : null;
+		} catch (e) {
+			return null;
+		}
+	}
+	// The tap can be handled a moment after the page is back, so look again for a few seconds.
+	let looking = false;
+	async function openPending() {
+		if (looking || document.visibilityState !== 'visible') {
+			return;
+		}
+		looking = true;
+		try {
+			for (const wait of [0, 400, 1000, 2000, 3500]) {
+				// eslint-disable-next-line no-await-in-loop
+				await new Promise(resolve => setTimeout(resolve, wait));
+				// eslint-disable-next-line no-await-in-loop
+				const url = await takePending();
+				if (url) {
+					openUrl(url);
+					return;
+				}
+			}
+		} finally {
+			looking = false;
+		}
+	}
+	navigator.serviceWorker.addEventListener('message', async (event) => {
+		const { action, url } = event.data || {};
+		if (action === 'web-push:open') {
+			await takePending();
+			openUrl(url);
+		}
+	});
+	openPending();
 
 	// The first page load may have finished before this script was ready
 	listen();
