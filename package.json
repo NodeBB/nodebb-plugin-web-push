@@ -47,6 +47,6 @@
   },
   "dependencies": {
     "validator": "^13.12.0",
-    "web-push": "^3.6.7"
+    "web-push": "^4.0.0"
   }
 }
