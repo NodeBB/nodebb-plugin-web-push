@@ -172,7 +172,7 @@ plugin.addRoutes = async ({ router, middleware, helpers }) => {
 
 		const [owned, stored] = await Promise.all([
 			db.isSortedSetMember(`uid:${req.uid}:web-push:subscriptions`, endpoint),
-			db.getObject(`web-push:subscriptions:${endpoint}`),
+			db.getObject(`web-push:subscriptions:${endpoint}`).then(subscriptions.decode),
 		]);
 
 		if (!owned || !stored) {

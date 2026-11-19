@@ -69,6 +69,23 @@ describe('nodebb-plugin-web-push', () => {
 			assert.ok(entry, 'subscription object should exist');
 			assert.equal(entry.browser, 'chrome');
 			assert.equal(entry.uid, uid1);
+			assert.equal(typeof entry.keys, 'string', 'nested keys must be stored as a JSON string');
+			assert.deepStrictEqual(JSON.parse(entry.keys), { auth: 'auth-key', p256dh: 'p256dh-key' });
+		});
+
+		it('should decode keys back to an object in Subscriptions.list', async () => {
+			const result = await Subscriptions.list([uid1]);
+			const sub = Array.from(result.get(uid1)).find(s => s.endpoint === 'https://fcm.googleapis.com/fcm/send/test-device-1');
+			assert.ok(sub, 'subscription should be listed');
+			assert.deepStrictEqual(sub.keys, { auth: 'auth-key', p256dh: 'p256dh-key' });
+		});
+
+		it('Subscriptions.decode should leave unusable legacy keys untouched', async () => {
+			const data = Subscriptions.decode({ endpoint: 'x', keys: '[object Object]' });
+			assert.equal(data.keys, '[object Object]');
+			const ok = Subscriptions.decode({ endpoint: 'x', keys: '{"auth":"a","p256dh":"p"}' });
+			assert.deepStrictEqual(ok.keys, { auth: 'a', p256dh: 'p' });
+			assert.strictEqual(Subscriptions.decode(null), null);
 		});
 
 		it('should reject non-https endpoints', async () => {
