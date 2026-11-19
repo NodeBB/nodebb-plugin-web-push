@@ -13,7 +13,8 @@
 		{ "hook": "filter:service-worker.scripts", "method": "registerServiceWorker" }
 	],
 	"scripts": [
-		"public/lib/main.js"
+		"public/lib/main.js",
+		"public/lib/ios.js"
 	],
 	"languages": "public/languages",
 	"modules": {
