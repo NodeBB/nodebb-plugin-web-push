@@ -4,6 +4,21 @@
 import { post, del } from 'api';
 import { success, warning } from 'alerts';
 
+// Same key as public/lib/main.js: the endpoint this device registered, so main.js can tell a
+// subscription that disappeared by itself (subscribe again) from one switched off here (leave it).
+function rememberEndpoint(endpoint) {
+	try {
+		const key = `web-push:endpoint:${app.user.uid}`;
+		if (endpoint) {
+			localStorage.setItem(key, endpoint);
+		} else {
+			localStorage.removeItem(key);
+		}
+	} catch (e) {
+		// no storage
+	}
+}
+
 export async function init() {
 	const containerEl = document.querySelector('[component="web-push-form"]');
 	if (!containerEl) {
@@ -33,6 +48,9 @@ export async function init() {
 				case 'remove': {
 					const endpoint = subselector.getAttribute('data-endpoint');
 					await del('/plugins/web-push/subscription', { subscription: { endpoint } });
+					if (subscription && subscription.endpoint === endpoint) {
+						rememberEndpoint(null); // this device was removed on purpose
+					}
 					ajaxify.refresh();
 					break;
 				}
@@ -46,6 +64,7 @@ export async function init() {
 							});
 
 							await post('/plugins/web-push/subscription', { subscription: subscription.toJSON() });
+							rememberEndpoint(subscription.endpoint);
 							ajaxify.refresh();
 						} catch (e) {
 							subselector.checked = false;
@@ -53,6 +72,7 @@ export async function init() {
 					} else {
 						await subscription.unsubscribe();
 						await del('/plugins/web-push/subscription', { subscription: subscription.toJSON() });
+						rememberEndpoint(null); // switched off on purpose: do not subscribe again by itself
 						subscription = null;
 						ajaxify.refresh();
 					}
@@ -67,12 +87,14 @@ export async function init() {
 	const devices = ajaxify.data.devices || [];
 	if (subscription && devices.some(d => d.endpoint === subscription.endpoint)) {
 		enabledEl.checked = true;
+		rememberEndpoint(subscription.endpoint);
 	} else if (subscription) {
 		// The browser is subscribed but the forum does not know this endpoint: the browser renewed
 		// it (Safari/iOS do this on their own), or the forum dropped it after a failed send. Register
 		// it again instead of unsubscribing, which switched notifications off by itself.
 		try {
 			await post('/plugins/web-push/subscription', { subscription: subscription.toJSON() });
+			rememberEndpoint(subscription.endpoint);
 			enabledEl.checked = true;
 			ajaxify.refresh();
 			return;
